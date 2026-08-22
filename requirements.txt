@@ -1,0 +1,16 @@
+﻿# Core
+python-dotenv==1.0.0
+requests==2.31.0
+
+# GitHub API
+PyGithub==1.59.1
+
+# Stripe API
+stripe==7.8.0
+
+# Utilities
+colorama==0.4.6
+json5==0.9.11
+
+# Testing
+pytest==7.4.0

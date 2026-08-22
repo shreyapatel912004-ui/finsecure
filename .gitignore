@@ -1,0 +1,29 @@
+﻿# API Keys & Secrets
+config/secrets.json
+config/.env
+.env
+*.key
+
+# Databases
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
