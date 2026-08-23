@@ -3,6 +3,7 @@ from colorama import Fore, Style, init
 from config.settings import PROJECT_ROOT
 from scanners.github_scanner import run_github_scan
 from forensics.stripe_analyzer import analyze_exposed_key
+from playbooks.stripe_remediation import remediate_stripe_key
 from core.database import db
 from core.logger import setup_logger
 
@@ -14,7 +15,7 @@ def print_banner():
     banner = f'''
 {Fore.CYAN}
 ╔═══════════════════════════════════════════╗
-║           FINSECURE v0.2.0                ║
+║           FINSECURE v0.3.0                ║
 ║   Fintech API Key Exposure Detector       ║
 ╚═══════════════════════════════════════════╝
 {Style.RESET_ALL}
@@ -26,8 +27,9 @@ def show_menu():
     print("1. Scan GitHub for exposed keys")
     print("2. Show all found keys")
     print("3. Analyze key for fraud (forensics)")
-    print("4. Exit")
-    return input(f"\n{Fore.CYAN}Choose option (1-4): {Style.RESET_ALL}")
+    print("4. Remediate exposed key (auto-fix)")
+    print("5. Exit")
+    return input(f"\n{Fore.CYAN}Choose option (1-5): {Style.RESET_ALL}")
 
 def show_found_keys():
     keys = db.get_all_keys()
@@ -76,6 +78,27 @@ def analyze_key_interactive():
     else:
         print(f"\n{Fore.GREEN}No fraud detected{Style.RESET_ALL}")
 
+def remediate_key_interactive():
+    key = input(f"{Fore.CYAN}Enter Stripe API key to remediate: {Style.RESET_ALL}")
+    
+    if not key.startswith('sk_'):
+        print(f"{Fore.RED}Invalid key format{Style.RESET_ALL}")
+        return
+    
+    print(f"{Fore.CYAN}Starting automated remediation...{Style.RESET_ALL}\n")
+    result = remediate_stripe_key(key)
+    
+    print(f"{Fore.YELLOW}=== Remediation Results ==={Style.RESET_ALL}")
+    print(f"Playbook: {result['playbook']}")
+    print(f"Status: {Fore.GREEN if result['overall_status'] == 'SUCCESS' else Fore.RED}{result['overall_status']}{Style.RESET_ALL}\n")
+    
+    print(f"{Fore.YELLOW}Steps Executed:{Style.RESET_ALL}")
+    for step in result['steps']:
+        status_color = Fore.GREEN if step['status'] == 'SUCCESS' else Fore.RED
+        print(f"  {status_color}[{step['status']}]{Style.RESET_ALL} {step['step']}")
+        if 'message' in step:
+            print(f"    → {step['message']}")
+
 def main():
     print_banner()
     
@@ -93,6 +116,9 @@ def main():
             analyze_key_interactive()
         
         elif choice == '4':
+            remediate_key_interactive()
+        
+        elif choice == '5':
             print(f"{Fore.GREEN}Goodbye!{Style.RESET_ALL}")
             sys.exit(0)
         
